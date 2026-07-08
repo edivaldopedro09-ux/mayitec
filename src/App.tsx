@@ -29,7 +29,7 @@ const LoadingScreen = () => (
 );
 
 // Proteção para Admin
-const AdminRoute = ({ children }: { children: JSX.Element }) => {
+const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const userInfoString = localStorage.getItem('userInfo');
   const userInfo = userInfoString ? JSON.parse(userInfoString) : null;
   return userInfo && userInfo.isAdmin ? children : <Navigate to="/login" replace />;

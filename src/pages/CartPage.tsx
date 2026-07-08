@@ -20,7 +20,9 @@ const CartPage: React.FC = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [createdOrderId, setCreatedOrderId] = useState('');
   const navigate = useNavigate();
-  const API_URL = 'http://localhost:5000';
+
+  // Configuração dinâmica para produção (Render/Vercel) e ambiente local
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   const total = cartItems.reduce((acc, item) => acc + item.price * item.qty, 0);
 
@@ -98,7 +100,7 @@ const CartPage: React.FC = () => {
       console.error("Erro ao processar checkout:", error);
       alert(error.response?.data?.message || "Ocorreu um erro ao registar a tua encomenda no servidor.");
     } finally {
-      setLoading(false);
+      loading && setLoading(false);
     }
   };
 
@@ -170,7 +172,7 @@ const CartPage: React.FC = () => {
     );
   }
 
-  // --- CORPO DO CARRINHO (DESIGN MELHORADO & ELEGANTE) ---
+  // --- CORPO DO CARRINHO ---
   return (
     <div className="max-w-7xl mx-auto p-6 md:p-12 animate-fade-in">
       <div className="flex flex-col md:flex-row justify-between items-start mb-10 gap-4 border-b border-gray-100 pb-6">
@@ -204,7 +206,7 @@ const CartPage: React.FC = () => {
                 <h3 className="font-bold text-gray-900 text-lg line-clamp-1">{item.name}</h3>
                 <p className="text-mayitec-purple font-black text-xl mt-0.5">{item.price.toLocaleString()} AOA</p>
                 
-                {/* Controlo de Quantidade Refinado */}
+                {/* Controlo de Quantidade */}
                 <div className="flex items-center justify-center sm:justify-start gap-3 mt-3">
                   <div className="flex items-center bg-gray-50 border border-gray-100 rounded-xl p-1 shadow-inner">
                     <button 

@@ -1,18 +1,22 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-interface CartItem {
+// 1. Adicionada a propriedade opcional 'image' para evitar o erro TS2339 no CartPage
+export interface CartItem {
   _id: string;
   name: string;
   price: number;
   imageUrl: string;
+  image?: string; 
   qty: number;
 }
 
+// 2. Adicionada a assinatura da função clearCart na tipagem do Contexto
 interface CartContextType {
   cartItems: CartItem[];
   addToCart: (product: any) => void;
   removeFromCart: (id: string) => void;
   updateQty: (id: string, qty: number) => void;
+  clearCart: () => void; 
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -46,14 +50,23 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('cart', JSON.stringify(newCart));
   };
 
-  // Dentro do CartContext.tsx, adiciona esta função ao value:
-const updateQty = (id: string, qty: number) => {
-  if (qty < 1) return; // Não permite zero ou negativo
-  setCartItems(prev => prev.map(item => item._id === id ? { ...item, qty } : item));
-};
+  const updateQty = (id: string, qty: number) => {
+    if (qty < 1) return; // Não permite zero ou negativo
+    setCartItems((prev) => {
+      const newCart = prev.map((item) => item._id === id ? { ...item, qty } : item);
+      localStorage.setItem('cart', JSON.stringify(newCart)); // Atualiza também o localStorage
+      return newCart;
+    });
+  };
+
+  // 3. Implementação da função clearCart que limpa o estado e o localStorage
+  const clearCart = () => {
+    setCartItems([]);
+    localStorage.removeItem('cart');
+  };
 
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, updateQty }}>
+    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, updateQty, clearCart }}>
       {children}
     </CartContext.Provider>
   );
