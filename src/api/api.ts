@@ -1,12 +1,13 @@
 import axios from 'axios';
 
+// Configuração dinâmica: Usa a variável da Vercel em produção, ou localhost em desenvolvimento
 const API = axios.create({
     baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
 });
 
-// Este interceptor vai intercetar todos os pedidos e injetar o token
+// Interceptor: Injeta o token JWT automaticamente em todos os pedidos
 API.interceptors.request.use((config) => {
-    // CORREÇÃO: Usamos 'userInfo' para coincidir com o localStorage.setItem('userInfo') do Login
+    // Busca os dados do utilizador guardados no Login
     const storedUser = localStorage.getItem('userInfo'); 
     
     if (storedUser) {
