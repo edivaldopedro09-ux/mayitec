@@ -12,7 +12,7 @@ import ProfilePage from './pages/ProfilePage';
 import { LogOut, ShoppingBag, User, MapPin, Mail, Phone } from 'lucide-react';
 
 // Componente de Loading
-const LoadingScreen = () => (
+const LoadingScreen: React.FC = () => (
   <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white">
     <img 
       src="/logo.png" 
@@ -28,8 +28,12 @@ const LoadingScreen = () => (
   </div>
 );
 
-// Proteção para Admin
-const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+// Proteção para Admin corrigida para evitar o erro de Namespace JSX
+interface AdminRouteProps {
+  children: React.ReactElement;
+}
+
+const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
   const userInfoString = localStorage.getItem('userInfo');
   const userInfo = userInfoString ? JSON.parse(userInfoString) : null;
   return userInfo && userInfo.isAdmin ? children : <Navigate to="/login" replace />;
@@ -110,47 +114,47 @@ const App: React.FC = () => {
         </main>
 
         {/* Footer */}
-      <footer className="bg-gray-900 text-gray-300 pt-16 pb-8 px-6 border-t-4 border-mayitec-purple">
-  <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-    {/* Coluna 1: Sobre */}
-    <div className="col-span-1 md:col-span-2">
-      <h3 className="text-white text-2xl font-bold mb-4">MAYITEC</h3>
-      <p className="text-sm leading-relaxed max-w-sm">
-        Soluções tecnológicas avançadas para o mercado Angolano. 
-        Comprometidos com a inovação, eficiência e o sucesso digital da sua empresa.
-      </p>
-    </div>
+        <footer className="bg-gray-900 text-gray-300 pt-16 pb-8 px-6 border-t-4 border-mayitec-purple">
+          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            {/* Coluna 1: Sobre */}
+            <div className="col-span-1 md:col-span-2">
+              <h3 className="text-white text-2xl font-bold mb-4">MAYITEC</h3>
+              <p className="text-sm leading-relaxed max-w-sm">
+                Soluções tecnológicas avançadas para o mercado Angolano. 
+                Comprometidos com a inovação, eficiência e o sucesso digital da sua empresa.
+              </p>
+            </div>
 
-    {/* Coluna 2: Links */}
-    <div>
-      <h3 className="text-white font-bold mb-4">Navegação</h3>
-      <ul className="space-y-3 text-sm">
-        <li><Link to="/" className="hover:text-mayitec-purple transition">Catálogo</Link></li>
-        <li><Link to="/cart" className="hover:text-mayitec-purple transition">Carrinho</Link></li>
-        <li><Link to="/profile" className="hover:text-mayitec-purple transition">Minha Conta</Link></li>
-      </ul>
-    </div>
+            {/* Coluna 2: Links */}
+            <div>
+              <h3 className="text-white font-bold mb-4">Navegação</h3>
+              <ul className="space-y-3 text-sm">
+                <li><Link to="/" className="hover:text-mayitec-purple transition">Catálogo</Link></li>
+                <li><Link to="/cart" className="hover:text-mayitec-purple transition">Carrinho</Link></li>
+                <li><Link to="/profile" className="hover:text-mayitec-purple transition">Minha Conta</Link></li>
+              </ul>
+            </div>
 
-    {/* Coluna 3: Contactos */}
-    <div>
-      <h3 className="text-white font-bold mb-4">Contactos</h3>
-      <ul className="space-y-3 text-sm">
-        <li className="flex items-center gap-2"><MapPin size={16} /> Luanda, Angola</li>
-        <li className="flex items-center gap-2"><Mail size={16} /> mayitec.services@gmail.com</li>
-        <li className="flex items-center gap-2"><Phone  size={16} /> +244 924 002 282</li>
-      </ul>
-    </div>
-  </div>
+            {/* Coluna 3: Contactos */}
+            <div>
+              <h3 className="text-white font-bold mb-4">Contactos</h3>
+              <ul className="space-y-3 text-sm">
+                <li className="flex items-center gap-2"><MapPin size={16} /> Luanda, Angola</li>
+                <li className="flex items-center gap-2"><Mail size={16} /> mayitec.services@gmail.com</li>
+                <li className="flex items-center gap-2"><Phone size={16} /> +244 924 002 282</li>
+              </ul>
+            </div>
+          </div>
 
-  {/* Barra Inferior */}
-  <div className="max-w-7xl mx-auto pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
-    <p>© {new Date().getFullYear()} EDME SOLUTIONS. Todos os direitos reservados.</p>
-    <div className="flex gap-6 mt-4 md:mt-0">
-      <span className="hover:text-white cursor-pointer">Termos de Serviço</span>
-      <span className="hover:text-white cursor-pointer">Privacidade</span>
-    </div>
-  </div>
-</footer>
+          {/* Barra Inferior */}
+          <div className="max-w-7xl mx-auto pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
+            <p>© {new Date().getFullYear()} EDME SOLUTIONS. Todos os direitos reservados.</p>
+            <div className="flex gap-6 mt-4 md:mt-0">
+              <span className="hover:text-white cursor-pointer">Termos de Serviço</span>
+              <span className="hover:text-white cursor-pointer">Privacidade</span>
+            </div>
+          </div>
+        </footer>
       </div>
     </Router>
   );
