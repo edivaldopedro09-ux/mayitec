@@ -22,8 +22,8 @@ const ProductDetailsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isAdded, setIsAdded] = useState<boolean>(false);
 
-  // Usa a variável de ambiente definida na Vercel
-  const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://api.mayitec.com';
+  // Busca a URL do backend nas variáveis de ambiente
+  const apiBaseUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, '') || 'https://api.mayitec.com';
 
   useEffect(() => {
     if (!id) {
@@ -56,23 +56,19 @@ const ProductDetailsPage: React.FC = () => {
     }
   };
 
-  /**
-   * Função Inteligente para corrigir o caminho da imagem
-   * Se vier com localhost, ele substitui pelo domínio correto de produção
-   */
   const getImageUrl = (url: string) => {
-    if (!url) return "https://placehold.co/600?text=Sem+Imagem";
+    if (!url) return "/sem-foto.png";
     
-    // Se a imagem guardada no BD tiver 'localhost:5000', substituímos
+    // Se a string contiver localhost, removemos o domínio e usamos a base correta
     if (url.includes('localhost:5000')) {
-      const pathOnly = url.split('localhost:5000')[1]; // Pega apenas "/uploads/..."
-      return `${apiBaseUrl}${pathOnly}`;
+      const path = url.split('localhost:5000')[1];
+      return `${apiBaseUrl}${path.startsWith('/') ? path : '/' + path}`;
     }
     
-    // Se for uma URL externa, retorna como está
+    // Se for um link externo (ex: Cloudinary, S3), retornamos tal qual
     if (url.startsWith('http')) return url;
     
-    // Se for caminho relativo, anexa a base
+    // Caminho relativo
     return `${apiBaseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
   };
 
@@ -130,8 +126,11 @@ const ProductDetailsPage: React.FC = () => {
               src={getImageUrl(product.imageUrl)} 
               alt={product.name} 
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              // Fallback para caso a imagem realmente não carregue
-              onError={(e) => e.currentTarget.src = "https://placehold.co/600?text=Sem+Imagem"}
+              onError={(e) => {
+                // A linha abaixo interrompe o loop infinito de tentativas
+                e.currentTarget.onerror = null; 
+                e.currentTarget.src = "/sem-foto.png"; // Usa uma imagem local na pasta public
+              }}
             />
           </div>
         </div>
