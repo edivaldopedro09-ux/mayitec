@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import API from '../api/api';
-import { User, Package, Clock, ShieldCheck, Mail, MapPin, Camera, Edit2, Save, X, Lock } from 'lucide-react';
+import { User, Package, Clock, ShieldCheck, Mail, Camera, Edit2, X } from 'lucide-react';
 
 const ProfilePage: React.FC = () => {
   const [user, setUser] = useState<any>(null);
@@ -17,7 +17,7 @@ const ProfilePage: React.FC = () => {
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Usa a variável de ambiente, com fallback para localhost em desenvolvimento
+  // Fallback para localhost em desenvolvimento
   const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   useEffect(() => {
@@ -70,25 +70,25 @@ const ProfilePage: React.FC = () => {
         data.append('password', formData.password);
       }
       
+      // O backend espera 'image' conforme definido no middleware
       if (fileInputRef.current?.files?.[0]) {
         data.append('image', fileInputRef.current.files[0]);
       }
 
-      const response = await API.put('/users/profile', data, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      // IMPORTANTE: Removemos os headers manualmente. 
+      // O Axios detecta o FormData e define o header multipart corretamente.
+      const response = await API.put('/users/profile', data);
       
       setUser(response.data);
       setPreviewImage(null);
       setIsEditing(false);
       alert("Perfil atualizado com sucesso!");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao atualizar perfil", error);
-      alert("Ocorreu um erro ao atualizar o perfil.");
+      alert(error.response?.data?.message || "Ocorreu um erro ao atualizar o perfil.");
     }
   };
 
-  // Função robusta para obter a URL da imagem
   const getProfileImage = () => {
     if (previewImage) return previewImage; 
     if (!user?.profilePic) return null;
