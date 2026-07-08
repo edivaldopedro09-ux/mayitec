@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import API from '../api/api';
 import { useCart } from '../context/CartContext';
 import { 
@@ -22,7 +22,8 @@ const ProductDetailsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isAdded, setIsAdded] = useState<boolean>(false);
 
-  const API_URL = 'http://localhost:5000';
+  // Determina a base da URL para as imagens (remove o /api do final se existir)
+  const backendBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
   useEffect(() => {
     if (!id) {
@@ -47,23 +48,30 @@ const ProductDetailsPage: React.FC = () => {
     fetchProduct();
   }, [id]);
 
-  // Efeito temporário de "Adicionado" no botão do carrinho
   const handleAddToCart = () => {
     if (product) {
       addToCart(product);
       setIsAdded(true);
-      setTimeout(() => setIsAdded(false), 2000); // Volta ao normal após 2 segundos
+      setTimeout(() => setIsAdded(false), 2000);
     }
   };
 
-  // Garante que a imagem renderiza perfeitamente se for link completo ou pasta local
+  // Garante que a imagem renderiza perfeitamente em qualquer ambiente
   const getImageUrl = (url: string) => {
-    if (!url) return "https://via.placeholder.com/600?text=Sem+Imagem";
+    if (!url) return "https://placehold.co/600?text=Sem+Imagem";
+    
+    // Se a imagem guardada na BD ainda tiver o localhost, corrigimos para o endereço de produção
+    if (url.includes('localhost:5000')) {
+      return url.replace('http://localhost:5000', backendBase);
+    }
+    
+    // Se for uma URL completa externa, mantemos
     if (url.startsWith('http')) return url;
-    return `${API_URL}${url}`;
+    
+    // Se for um caminho relativo (ex: /uploads/foto.jpg), concatenamos com o backendBase
+    return `${backendBase}${url.startsWith('/') ? '' : '/'}${url}`;
   };
 
-  // --- ECRÃ DE CARREGAMENTO (SKELETON SIMULADO) ---
   if (loading) {
     return (
       <div className="max-w-6xl mx-auto p-12 text-center animate-pulse space-y-4">
@@ -81,7 +89,6 @@ const ProductDetailsPage: React.FC = () => {
     );
   }
 
-  // --- ECRÃ DE ERRO ESTILIZADO ---
   if (error) {
     return (
       <div className="max-w-xl mx-auto my-20 p-8 bg-white border border-red-100 rounded-3xl shadow-xl text-center flex flex-col items-center justify-center">
@@ -104,8 +111,6 @@ const ProductDetailsPage: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-6 md:p-12 animate-fade-in">
-      
-      {/* Botão Superior de Navegação */}
       <button 
         onClick={() => navigate(-1)} 
         className="flex items-center gap-2 text-gray-500 hover:text-mayitec-purple font-bold text-sm mb-8 transition group"
@@ -115,23 +120,19 @@ const ProductDetailsPage: React.FC = () => {
       </button>
 
       <div className="grid lg:grid-cols-2 gap-12 items-start">
-        
-        {/* Bloco de Imagem com Zoom e Sombras Suaves */}
         <div className="bg-white p-4 border border-gray-100 rounded-3xl shadow-md overflow-hidden group">
           <div className="w-full h-[350px] md:h-[480px] rounded-2xl overflow-hidden bg-gray-50">
             <img 
               src={getImageUrl(product.imageUrl)} 
               alt={product.name} 
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              onError={(e) => e.currentTarget.src = "https://via.placeholder.com/600?text=Sem+Imagem"}
+              onError={(e) => e.currentTarget.src = "https://placehold.co/600?text=Sem+Imagem"}
             />
           </div>
         </div>
 
-        {/* Bloco de Informações Técnico-Comerciais */}
         <div className="flex flex-col h-full justify-between py-2">
           <div>
-            {/* Categoria e Badge de Stock Dinâmico */}
             <div className="flex items-center gap-3 mb-4 flex-wrap">
               <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-xl text-xs font-black uppercase tracking-wider border border-gray-200/40">
                 {product.category || 'Geral'}
@@ -148,12 +149,10 @@ const ProductDetailsPage: React.FC = () => {
               )}
             </div>
 
-            {/* Nome do Produto */}
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight leading-tight mb-4">
               {product.name}
             </h1>
 
-            {/* Preço Formatado */}
             <div className="mb-6">
               <span className="text-3xl font-black text-mayitec-purple tracking-tight">
                 {product.price.toLocaleString()}
@@ -161,7 +160,6 @@ const ProductDetailsPage: React.FC = () => {
               <span className="text-lg font-black text-mayitec-purple ml-1">AOA</span>
             </div>
 
-            {/* Caixa Separadora para Descrição */}
             <div className="border-t border-b border-gray-100 py-6 mb-6">
               <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Descrição Completa</h3>
               <p className="text-gray-600 text-base leading-relaxed whitespace-pre-line">
@@ -170,7 +168,6 @@ const ProductDetailsPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Secção de Ação e Segurança */}
           <div className="space-y-6">
             <button 
               onClick={handleAddToCart}
@@ -196,7 +193,6 @@ const ProductDetailsPage: React.FC = () => {
               )}
             </button>
 
-            {/* Selos de Qualidade Corporativa */}
             <div className="grid grid-cols-3 gap-2 pt-4 border-t border-gray-50 text-[11px] text-gray-400 text-center font-medium">
               <div className="flex flex-col items-center gap-1 p-2 bg-gray-50/60 rounded-xl">
                 <ShieldCheck size={18} className="text-mayitec-purple" />
@@ -212,7 +208,6 @@ const ProductDetailsPage: React.FC = () => {
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>
