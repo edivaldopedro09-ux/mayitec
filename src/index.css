@@ -1,0 +1,13 @@
+/* Importação moderna do Tailwind v4 */
+@import "tailwindcss";
+
+/* Ligação direta à tua paleta de cores da MAYITEC */
+@config "../tailwind.config.js";
+
+/* Estilos globais padrão (sem usar @apply para evitar erros de compilação) */
+body {
+  background-color: #f8f9fa; /* Fundo limpo (mayitec-light) */
+  color: #333333;            /* Texto escuro (mayitec-dark) */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
