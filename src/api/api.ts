@@ -1,20 +1,25 @@
 import axios from 'axios';
 
-// Configuração dinâmica: Usa a variável da Vercel em produção, ou localhost em desenvolvimento
+// 1. Obtém a URL base do ambiente
+const base = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+// 2. Garante que a URL não termina com '/' e adiciona o '/api' de forma segura
+// Se o VITE_API_URL já vier com '/api', ele não duplica.
+const normalizedBaseURL = base.replace(/\/+$/, ''); // Remove barra no final
+const baseURL = normalizedBaseURL.endsWith('/api') ? normalizedBaseURL : `${normalizedBaseURL}/api`;
+
 const API = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+    baseURL: baseURL,
 });
 
-// Interceptor: Injeta o token JWT automaticamente em todos os pedidos
+// Interceptor: Injeta o token JWT automaticamente
 API.interceptors.request.use((config) => {
-    // Busca os dados do utilizador guardados no Login
     const storedUser = localStorage.getItem('userInfo'); 
     
     if (storedUser) {
         try {
             const { token } = JSON.parse(storedUser);
             if (token) {
-                // Adiciona o token ao cabeçalho Authorization
                 config.headers.Authorization = `Bearer ${token}`;
             }
         } catch (error) {
@@ -25,5 +30,10 @@ API.interceptors.request.use((config) => {
 }, (error) => {
     return Promise.reject(error);
 });
+
+// DEBUG: Log apenas em desenvolvimento para veres o que está a acontecer
+if (import.meta.env.MODE === 'development') {
+    console.log("API Axios configurada para:", baseURL);
+}
 
 export default API;
