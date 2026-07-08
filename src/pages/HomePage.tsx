@@ -25,6 +25,8 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        // CORREÇÃO FEITA AQUI: Alterado de '/api/products' para '/products'
+        // Como o seu API.ts já tem baseURL com /api, aqui devemos apenas indicar o caminho final.
         const { data } = await API.get('/products');
         setProducts(data);
         const savedFavs = JSON.parse(localStorage.getItem('favs') || '[]');
@@ -103,7 +105,6 @@ const HomePage: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
           {paginatedProducts.map((product) => (
             <div key={product._id} className="relative">
-              {/* CORREÇÃO AQUI: Passagem explícita de props para garantir o id */}
               <ProductCard 
                 id={product._id} 
                 name={product.name} 

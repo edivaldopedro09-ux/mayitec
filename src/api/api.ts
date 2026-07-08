@@ -1,26 +1,28 @@
 import axios from 'axios';
 
-// Lê a variável de ambiente definida na Vercel ou usa o localhost como fallback
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
 const API = axios.create({
-  baseURL: baseURL,
+    baseURL: 'http://localhost:5000/api',
 });
 
-// Adiciona o token ao cabeçalho automaticamente se ele existir
+// Este interceptor vai intercetar todos os pedidos e injetar o token
 API.interceptors.request.use((config) => {
-  const userInfo = localStorage.getItem('userInfo');
-  if (userInfo) {
-    try {
-      const { token } = JSON.parse(userInfo);
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    } catch (error) {
-      console.error("Erro ao ler o token do localStorage", error);
+    // CORREÇÃO: Usamos 'userInfo' para coincidir com o localStorage.setItem('userInfo') do Login
+    const storedUser = localStorage.getItem('userInfo'); 
+    
+    if (storedUser) {
+        try {
+            const { token } = JSON.parse(storedUser);
+            if (token) {
+                // Adiciona o token ao cabeçalho Authorization
+                config.headers.Authorization = `Bearer ${token}`;
+            }
+        } catch (error) {
+            console.error("Erro ao ler o token do localStorage:", error);
+        }
     }
-  }
-  return config;
+    return config;
+}, (error) => {
+    return Promise.reject(error);
 });
 
 export default API;

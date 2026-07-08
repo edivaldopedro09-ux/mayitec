@@ -11,24 +11,25 @@ const LoginPage: React.FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    
     try {
       const { data } = await API.post('/users/login', { email, password });
       
-      // Guardar os dados (token + info do user)
+      // IMPORTANTE: Certifica-te que aqui usas 'userInfo'
       localStorage.setItem('userInfo', JSON.stringify(data));
       
-      // Lógica de Redirecionamento Baseada no Perfil
       if (data.isAdmin) {
-        navigate('/admin'); // Redireciona para o Painel Administrativo
+        navigate('/admin');
       } else {
-        navigate('/');      // Redireciona para a Home da Loja
+        navigate('/');
       }
       
-      // Força um pequeno refresh no estado do sistema (opcional)
       window.location.reload(); 
-    } catch (error) {
-      console.error(error);
-      alert("Email ou password inválidos. Tente novamente.");
+    } catch (error: any) {
+      // DEBUG: Isto vai mostrar a mensagem real do servidor (ex: "Utilizador não encontrado")
+      const errorMessage = error.response?.data?.message || "Erro ao fazer login";
+      console.error("Erro detalhado:", error.response?.data);
+      alert(errorMessage); 
     } finally {
       setLoading(false);
     }
@@ -82,6 +83,5 @@ const LoginPage: React.FC = () => {
     </div>
   );
 };
-
 
 export default LoginPage;
