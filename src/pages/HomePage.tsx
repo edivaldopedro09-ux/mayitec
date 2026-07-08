@@ -20,13 +20,10 @@ const HomePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   
   const itemsPerPage = 8;
-  const API_URL = 'http://localhost:5000';
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // CORREÇÃO FEITA AQUI: Alterado de '/api/products' para '/products'
-        // Como o seu API.ts já tem baseURL com /api, aqui devemos apenas indicar o caminho final.
         const { data } = await API.get('/products');
         setProducts(data);
         const savedFavs = JSON.parse(localStorage.getItem('favs') || '[]');
@@ -110,7 +107,8 @@ const HomePage: React.FC = () => {
                 name={product.name} 
                 price={product.price} 
                 category={product.category}
-                imageUrl={`${API_URL}${product.imageUrl}`} 
+                // Se a URL já começar com http (Cloudinary), usa-a. Caso contrário, anexa a URL base.
+                imageUrl={product.imageUrl.startsWith('http') ? product.imageUrl : `${import.meta.env.VITE_API_URL}${product.imageUrl}`}
               />
               <button 
                 onClick={() => toggleFavorite(product._id)} 
