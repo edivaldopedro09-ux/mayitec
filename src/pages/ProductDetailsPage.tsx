@@ -22,8 +22,8 @@ const ProductDetailsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isAdded, setIsAdded] = useState<boolean>(false);
 
-  // Determina a base da URL para as imagens (remove o /api do final se existir)
-  const backendBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+  // Usa a variável de ambiente definida na Vercel
+  const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://api.mayitec.com';
 
   useEffect(() => {
     if (!id) {
@@ -56,20 +56,24 @@ const ProductDetailsPage: React.FC = () => {
     }
   };
 
-  // Garante que a imagem renderiza perfeitamente em qualquer ambiente
+  /**
+   * Função Inteligente para corrigir o caminho da imagem
+   * Se vier com localhost, ele substitui pelo domínio correto de produção
+   */
   const getImageUrl = (url: string) => {
     if (!url) return "https://placehold.co/600?text=Sem+Imagem";
     
-    // Se a imagem guardada na BD ainda tiver o localhost, corrigimos para o endereço de produção
+    // Se a imagem guardada no BD tiver 'localhost:5000', substituímos
     if (url.includes('localhost:5000')) {
-      return url.replace('http://localhost:5000', backendBase);
+      const pathOnly = url.split('localhost:5000')[1]; // Pega apenas "/uploads/..."
+      return `${apiBaseUrl}${pathOnly}`;
     }
     
-    // Se for uma URL completa externa, mantemos
+    // Se for uma URL externa, retorna como está
     if (url.startsWith('http')) return url;
     
-    // Se for um caminho relativo (ex: /uploads/foto.jpg), concatenamos com o backendBase
-    return `${backendBase}${url.startsWith('/') ? '' : '/'}${url}`;
+    // Se for caminho relativo, anexa a base
+    return `${apiBaseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
   };
 
   if (loading) {
@@ -126,6 +130,7 @@ const ProductDetailsPage: React.FC = () => {
               src={getImageUrl(product.imageUrl)} 
               alt={product.name} 
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              // Fallback para caso a imagem realmente não carregue
               onError={(e) => e.currentTarget.src = "https://placehold.co/600?text=Sem+Imagem"}
             />
           </div>
@@ -155,7 +160,7 @@ const ProductDetailsPage: React.FC = () => {
 
             <div className="mb-6">
               <span className="text-3xl font-black text-mayitec-purple tracking-tight">
-                {product.price.toLocaleString()}
+                {product.price?.toLocaleString()}
               </span>
               <span className="text-lg font-black text-mayitec-purple ml-1">AOA</span>
             </div>
