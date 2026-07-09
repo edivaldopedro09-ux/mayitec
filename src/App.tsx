@@ -10,7 +10,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import ProductDetailsPage from './pages/ProductDetailsPage';
 import ProfilePage from './pages/ProfilePage';
 import { LogOut, ShoppingBag, User, MapPin, Mail, Phone } from 'lucide-react';
-
+import EditProduct from './pages/EditProduct';
 // Componente de Loading
 const LoadingScreen: React.FC = () => (
   <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white">
@@ -107,7 +107,7 @@ const App: React.FC = () => {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/product/:id" element={<ProductDetailsPage />} />
-            
+            <Route path="/admin/edit-product/:id" element={<AdminRoute><EditProduct /></AdminRoute>} />
             <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
             <Route path="/admin/add-product" element={<AdminRoute><AdminProductPage /></AdminRoute>} />
             
