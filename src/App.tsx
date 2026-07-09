@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { Analytics } from "@vercel/analytics/react"; // <-- Importação do Vercel Analytics
 import { useCart } from './context/CartContext'; 
 import HomePage from './pages/HomePage';
 import CartPage from './pages/CartPage';
@@ -154,6 +155,9 @@ const App: React.FC = () => {
             </div>
           </div>
         </footer>
+        
+        {/* Componente Analytics da Vercel */}
+        <Analytics />
       </div>
     </Router>
   );
