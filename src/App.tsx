@@ -25,7 +25,7 @@ const LoadingScreen: React.FC = () => (
         A preparar a sua experiência...
         
       </p>
-      <p className="mt-1 text-gray-400 text-xs">vesrsão 1.0.0</p>
+      
     </div>
   </div>
 );
