@@ -23,7 +23,11 @@ const LoadingScreen: React.FC = () => (
       <div className="w-12 h-12 border-4 border-t-mayitec-purple border-gray-200 rounded-full animate-spin"></div>
       <p className="mt-6 text-gray-400 font-medium tracking-[0.2em] uppercase text-xs">
         A preparar a sua experiência...
+        
       </p>
+      <p className="mt-2 text-gray-400 text-xs">Se demorar mais de 5 segundos, verifique a sua ligação à internet.</p>
+      <p className="mt-1 text-gray-400 text-xs">Se o problema persistir, contacte-nos via WhatsApp: +244 924 002 282</p>
+      <p className="mt-1 text-gray-400 text-xs">vesrsão 1.0.0</p>
     </div>
   </div>
 );
