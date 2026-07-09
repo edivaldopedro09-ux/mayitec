@@ -70,7 +70,6 @@ const AdminDashboard: React.FC = () => {
   const handleUpdateStock = async (id: string, currentStock: number, change: number) => {
     const newStock = Math.max(0, currentStock + change);
     try {
-      // Nota: Certifique-se que o controller de updateProduct aceite atualizações parciais de stock
       await API.put(`/products/${id}`, { stock: newStock });
       setProducts(prev => prev.map(p => p._id === id ? { ...p, stock: newStock } : p));
     } catch (err) {
@@ -125,7 +124,6 @@ const AdminDashboard: React.FC = () => {
         </Link>
       </div>
       
-      {/* Cards de Métricas */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-12">
         <div className="p-6 bg-white rounded-3xl shadow-sm border border-gray-100 flex items-center gap-4">
           <div className="p-3 bg-blue-50 rounded-2xl text-blue-600"><ShoppingCart size={24} /></div>
@@ -134,13 +132,17 @@ const AdminDashboard: React.FC = () => {
             <p className="text-2xl md:text-3xl font-black text-gray-900">{orders.length}</p>
           </div>
         </div>
+
         <div className="p-6 bg-white rounded-3xl shadow-sm border border-gray-100 flex items-center gap-4">
           <div className="p-3 bg-yellow-50 rounded-2xl text-yellow-600"><ShieldAlert size={24} /></div>
           <div>
             <h3 className="font-bold text-gray-400 text-xs uppercase tracking-wider">Pendentes</h3>
-            <p className="text-2xl md:text-3xl font-black text-yellow-500">{orders.filter(o => o.status === 'Pendente').length}</p>
+            <p className="text-2xl md:text-3xl font-black text-yellow-500">
+              {orders.filter(o => o.status === 'Pendente').length}
+            </p>
           </div>
         </div>
+
         <div className="p-6 bg-white rounded-3xl shadow-sm border border-gray-100 flex items-center gap-4">
           <div className="p-3 bg-purple-50 rounded-2xl text-mayitec-purple"><Layers size={24} /></div>
           <div>
@@ -148,6 +150,7 @@ const AdminDashboard: React.FC = () => {
             <p className="text-2xl md:text-3xl font-black text-gray-900">{products.length}</p>
           </div>
         </div>
+
         <div className="p-6 bg-white rounded-3xl shadow-sm border border-gray-100 flex items-center gap-4">
           <div className="p-3 bg-green-50 rounded-2xl text-green-600"><Users size={24} /></div>
           <div>
@@ -164,12 +167,67 @@ const AdminDashboard: React.FC = () => {
             onClick={() => setActiveTab(tab)}
             className={`pb-4 text-base font-black border-b-2 transition-all px-2 capitalize ${activeTab === tab ? 'border-mayitec-purple text-mayitec-purple' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
           >
-            {tab === 'orders' ? `Pedidos (${orders.length})` : tab === 'products' ? `Inventário (${products.length})` : `Clientes (${users.length})`}
+            {tab === 'orders' ? `Gestão de Pedidos (${orders.length})` : tab === 'products' ? `Inventário (${products.length})` : `Clientes (${users.length})`}
           </button>
         ))}
       </div>
 
-      {/* Tabela de Produtos (Com botão de editar) */}
+      {activeTab === 'orders' && (
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in">
+          <div className="p-6 border-b border-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-50/40">
+            <h2 className="text-xl font-black text-gray-900">Histórico de Vendas</h2>
+            <div className="flex gap-1 bg-gray-100/80 p-1 rounded-xl">
+              {['Todos', 'Pendente', 'Aprovado', 'Cancelado'].map((status) => (
+                <button
+                  key={status}
+                  onClick={() => setStatusFilter(status)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-black transition ${statusFilter === status ? 'bg-mayitec-purple text-white shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
+                >
+                  {status}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left whitespace-nowrap">
+              <thead className="bg-gray-50 text-gray-400 text-[11px] font-black tracking-wider border-b uppercase">
+                <tr>
+                  <th className="p-5">Data</th>
+                  <th className="p-5">Cliente</th>
+                  <th className="p-5">Total</th>
+                  <th className="p-5">Canal</th>
+                  <th className="p-5">Status</th>
+                  <th className="p-5 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {filteredOrders.map((order) => (
+                  <tr key={order._id} className="hover:bg-gray-50/80 transition">
+                    <td className="p-5 text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</td>
+                    <td className="p-5 font-bold text-gray-800">{order.user?.name || 'Cliente Geral'}</td>
+                    <td className="p-5 font-black text-gray-900">{order.totalPrice?.toLocaleString()} AOA</td>
+                    <td className="p-5"><span className="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-md border border-green-100">{order.paymentMethod || 'WhatsApp'}</span></td>
+                    <td className="p-5">
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-black ${order.status === 'Pendente' ? 'bg-yellow-50 text-yellow-700 border border-yellow-100' : order.status === 'Aprovado' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-red-50 text-red-600 border border-red-100'}`}>
+                        {order.status}
+                      </span>
+                    </td>
+                    <td className="p-5 flex justify-center gap-3">
+                      {order.status === 'Pendente' && (
+                        <>
+                          <button onClick={() => updateOrderStatus(order._id, 'Aprovado')} className="text-green-600 hover:text-green-800 transition p-1" title="Aprovar Encomenda"><CheckCircle size={20}/></button>
+                          <button onClick={() => updateOrderStatus(order._id, 'Cancelado')} className="text-red-400 hover:text-red-600 transition p-1" title="Cancelar Encomenda"><XCircle size={20}/></button>
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {activeTab === 'products' && (
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in">
           <div className="p-6 border-b border-gray-50 bg-gray-50/40">
@@ -204,13 +262,11 @@ const AdminDashboard: React.FC = () => {
                         <button onClick={() => handleUpdateStock(product._id, product.stock, 1)} className="p-1 bg-gray-100 rounded-lg"><Plus size={14} /></button>
                       </div>
                     </td>
-                    <td className="p-5 flex justify-center gap-4">
+                    <td className="p-5 text-center flex justify-center items-center gap-3">
                       <Link to={`/admin/edit-product/${product._id}`} className="text-blue-500 hover:text-blue-700 transition">
                         <Edit size={18} />
                       </Link>
-                      <button onClick={() => handleDeleteProduct(product._id, product.name)} className="text-red-400 hover:text-red-600 transition">
-                        <Trash2 size={18} />
-                      </button>
+                      <button onClick={() => handleDeleteProduct(product._id, product.name)} className="text-gray-400 hover:text-red-500 transition"><Trash2 size={18} /></button>
                     </td>
                   </tr>
                 ))}
@@ -219,8 +275,42 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
       )}
-      
-      {/* (Omissão das outras abas para brevidade, mantenha o seu código original aqui) */}
+
+      {activeTab === 'users' && (
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in">
+          <div className="p-6 border-b border-gray-50 bg-gray-50/40">
+            <h2 className="text-xl font-black text-gray-900">Utilizadores Registados</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left whitespace-nowrap">
+              <thead className="bg-gray-50 text-gray-400 text-[11px] font-black tracking-wider border-b uppercase">
+                <tr>
+                  <th className="p-5">Nome</th>
+                  <th className="p-5">E-mail</th>
+                  <th className="p-5">Estatuto</th>
+                  <th className="p-5 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {users.map((user) => (
+                  <tr key={user._id} className="hover:bg-gray-50/80 transition">
+                    <td className="p-5 font-bold">{user.name}</td>
+                    <td className="p-5 text-gray-500">{user.email}</td>
+                    <td className="p-5">
+                      <span className={`px-2.5 py-0.5 rounded-md font-black text-[10px] uppercase ${user.isAdmin ? 'bg-purple-50 text-mayitec-purple' : 'bg-gray-50 text-gray-600'}`}>
+                        {user.isAdmin ? 'Admin' : 'Cliente'}
+                      </span>
+                    </td>
+                    <td className="p-5 text-center">
+                      {!user.isAdmin && <button onClick={() => handleDeleteUser(user._id, user.name)} className="text-gray-400 hover:text-red-500"><Trash2 size={18} /></button>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

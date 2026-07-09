@@ -9,8 +9,9 @@ import AdminProductPage from './pages/AdminProductPage';
 import AdminDashboard from './pages/AdminDashboard';
 import ProductDetailsPage from './pages/ProductDetailsPage';
 import ProfilePage from './pages/ProfilePage';
-import { LogOut, ShoppingBag, User, MapPin, Mail, Phone } from 'lucide-react';
 import EditProduct from './pages/EditProduct';
+import { LogOut, ShoppingBag, User, MapPin, Mail, Phone } from 'lucide-react';
+
 // Componente de Loading
 const LoadingScreen: React.FC = () => (
   <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white">
@@ -23,14 +24,12 @@ const LoadingScreen: React.FC = () => (
       <div className="w-12 h-12 border-4 border-t-mayitec-purple border-gray-200 rounded-full animate-spin"></div>
       <p className="mt-6 text-gray-400 font-medium tracking-[0.2em] uppercase text-xs">
         A preparar a sua experiência...
-        
       </p>
-      
     </div>
   </div>
 );
 
-// Proteção para Admin corrigida para evitar o erro de Namespace JSX
+// Proteção para Admin
 interface AdminRouteProps {
   children: React.ReactElement;
 }
@@ -107,9 +106,11 @@ const App: React.FC = () => {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/product/:id" element={<ProductDetailsPage />} />
-            <Route path="/admin/edit-product/:id" element={<AdminRoute><EditProduct /></AdminRoute>} />
+            
+            {/* Rotas Administrativas */}
             <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
             <Route path="/admin/add-product" element={<AdminRoute><AdminProductPage /></AdminRoute>} />
+            <Route path="/admin/edit-product/:id" element={<AdminRoute><EditProduct /></AdminRoute>} />
             
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
@@ -118,7 +119,6 @@ const App: React.FC = () => {
         {/* Footer */}
         <footer className="bg-gray-900 text-gray-300 pt-16 pb-8 px-6 border-t-4 border-mayitec-purple">
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-            {/* Coluna 1: Sobre */}
             <div className="col-span-1 md:col-span-2">
               <h3 className="text-white text-2xl font-bold mb-4">MAYITEC</h3>
               <p className="text-sm leading-relaxed max-w-sm">
@@ -127,7 +127,6 @@ const App: React.FC = () => {
               </p>
             </div>
 
-            {/* Coluna 2: Links */}
             <div>
               <h3 className="text-white font-bold mb-4">Navegação</h3>
               <ul className="space-y-3 text-sm">
@@ -137,7 +136,6 @@ const App: React.FC = () => {
               </ul>
             </div>
 
-            {/* Coluna 3: Contactos */}
             <div>
               <h3 className="text-white font-bold mb-4">Contactos</h3>
               <ul className="space-y-3 text-sm">
@@ -148,7 +146,6 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          {/* Barra Inferior */}
           <div className="max-w-7xl mx-auto pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
             <p>© {new Date().getFullYear()} EDME SOLUTIONS. Todos os direitos reservados.</p>
             <div className="flex gap-6 mt-4 md:mt-0">
