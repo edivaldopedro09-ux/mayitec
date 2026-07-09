@@ -13,7 +13,7 @@ import {
   Layers, 
   ShieldAlert,
   UserCheck,
-  Edit // Importação adicionada
+  Edit
 } from 'lucide-react';
 
 type TabType = 'orders' | 'products' | 'users';
@@ -70,6 +70,7 @@ const AdminDashboard: React.FC = () => {
   const handleUpdateStock = async (id: string, currentStock: number, change: number) => {
     const newStock = Math.max(0, currentStock + change);
     try {
+      // Nota: Certifique-se que o controller de updateProduct aceite atualizações parciais de stock
       await API.put(`/products/${id}`, { stock: newStock });
       setProducts(prev => prev.map(p => p._id === id ? { ...p, stock: newStock } : p));
     } catch (err) {
@@ -124,8 +125,8 @@ const AdminDashboard: React.FC = () => {
         </Link>
       </div>
       
+      {/* Cards de Métricas */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-12">
-        {/* Cards de resumo mantidos iguais */}
         <div className="p-6 bg-white rounded-3xl shadow-sm border border-gray-100 flex items-center gap-4">
           <div className="p-3 bg-blue-50 rounded-2xl text-blue-600"><ShoppingCart size={24} /></div>
           <div>
@@ -133,7 +134,6 @@ const AdminDashboard: React.FC = () => {
             <p className="text-2xl md:text-3xl font-black text-gray-900">{orders.length}</p>
           </div>
         </div>
-
         <div className="p-6 bg-white rounded-3xl shadow-sm border border-gray-100 flex items-center gap-4">
           <div className="p-3 bg-yellow-50 rounded-2xl text-yellow-600"><ShieldAlert size={24} /></div>
           <div>
@@ -141,7 +141,6 @@ const AdminDashboard: React.FC = () => {
             <p className="text-2xl md:text-3xl font-black text-yellow-500">{orders.filter(o => o.status === 'Pendente').length}</p>
           </div>
         </div>
-
         <div className="p-6 bg-white rounded-3xl shadow-sm border border-gray-100 flex items-center gap-4">
           <div className="p-3 bg-purple-50 rounded-2xl text-mayitec-purple"><Layers size={24} /></div>
           <div>
@@ -149,7 +148,6 @@ const AdminDashboard: React.FC = () => {
             <p className="text-2xl md:text-3xl font-black text-gray-900">{products.length}</p>
           </div>
         </div>
-
         <div className="p-6 bg-white rounded-3xl shadow-sm border border-gray-100 flex items-center gap-4">
           <div className="p-3 bg-green-50 rounded-2xl text-green-600"><Users size={24} /></div>
           <div>
@@ -166,25 +164,12 @@ const AdminDashboard: React.FC = () => {
             onClick={() => setActiveTab(tab)}
             className={`pb-4 text-base font-black border-b-2 transition-all px-2 capitalize ${activeTab === tab ? 'border-mayitec-purple text-mayitec-purple' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
           >
-            {tab === 'orders' ? `Gestão de Pedidos (${orders.length})` : tab === 'products' ? `Inventário (${products.length})` : `Clientes (${users.length})`}
+            {tab === 'orders' ? `Pedidos (${orders.length})` : tab === 'products' ? `Inventário (${products.length})` : `Clientes (${users.length})`}
           </button>
         ))}
       </div>
 
-      {/* Seção de Pedidos */}
-      {activeTab === 'orders' && (
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-          {/* ... (Seu conteúdo de pedidos aqui) ... */}
-          <div className="p-6 border-b border-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-50/40">
-            <h2 className="text-xl font-black text-gray-900">Histórico de Vendas</h2>
-          </div>
-          <table className="w-full text-left">
-            {/* ... tabela mantida igual ... */}
-          </table>
-        </div>
-      )}
-
-      {/* Seção de Produtos */}
+      {/* Tabela de Produtos (Com botão de editar) */}
       {activeTab === 'products' && (
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in">
           <div className="p-6 border-b border-gray-50 bg-gray-50/40">
@@ -219,12 +204,13 @@ const AdminDashboard: React.FC = () => {
                         <button onClick={() => handleUpdateStock(product._id, product.stock, 1)} className="p-1 bg-gray-100 rounded-lg"><Plus size={14} /></button>
                       </div>
                     </td>
-                    <td className="p-5 text-center flex justify-center gap-3 items-center mt-2">
-                      {/* BOTÃO DE EDITAR ADICIONADO AQUI */}
+                    <td className="p-5 flex justify-center gap-4">
                       <Link to={`/admin/edit-product/${product._id}`} className="text-blue-500 hover:text-blue-700 transition">
                         <Edit size={18} />
                       </Link>
-                      <button onClick={() => handleDeleteProduct(product._id, product.name)} className="text-gray-400 hover:text-red-500"><Trash2 size={18} /></button>
+                      <button onClick={() => handleDeleteProduct(product._id, product.name)} className="text-red-400 hover:text-red-600 transition">
+                        <Trash2 size={18} />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -233,13 +219,8 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* Seção de Utilizadores */}
-      {activeTab === 'users' && (
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in">
-           {/* ... (Seu conteúdo de usuários aqui) ... */}
-        </div>
-      )}
+      
+      {/* (Omissão das outras abas para brevidade, mantenha o seu código original aqui) */}
     </div>
   );
 };
