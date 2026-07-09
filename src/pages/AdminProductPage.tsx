@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import API from '../api/api';
-import { Upload, Loader2, Package, Tag, DollarSign, FileText, Image as ImageIcon } from 'lucide-react';
+import { Upload, Loader2, Package, Image as ImageIcon, X } from 'lucide-react';
 
 const AdminProductPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -9,13 +9,23 @@ const AdminProductPage: React.FC = () => {
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  
+  // Referência para limpar o input de arquivo após o envio
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file)); // Criar preview da imagem
+      setPreviewUrl(URL.createObjectURL(file));
     }
+  };
+
+  const clearForm = () => {
+    setFormData({ name: '', price: '', category: '', stock: '', description: '' });
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    if (fileInputRef.current) fileInputRef.current.value = ''; // Limpa o input visualmente
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,10 +41,9 @@ const AdminProductPage: React.FC = () => {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       alert('Produto adicionado com sucesso!');
-      setFormData({ name: '', price: '', category: '', stock: '', description: '' });
-      setSelectedFile(null);
-      setPreviewUrl(null);
+      clearForm();
     } catch (error) {
+      console.error(error);
       alert('Erro ao adicionar produto. Verifique as permissões.');
     } finally {
       setLoading(false);
@@ -51,16 +60,32 @@ const AdminProductPage: React.FC = () => {
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Imagem Preview */}
-        <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-2xl p-6 hover:border-mayitec-purple transition-colors">
+        <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-2xl p-6 hover:border-mayitec-purple transition-colors relative">
           {previewUrl ? (
-            <img src={previewUrl} alt="Preview" className="h-40 w-full object-contain mb-4 rounded-lg" />
+            <div className="relative">
+              <img src={previewUrl} alt="Preview" className="h-40 w-full object-contain mb-4 rounded-lg" />
+              <button 
+                type="button" 
+                onClick={clearForm}
+                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+              >
+                <X size={16} />
+              </button>
+            </div>
           ) : (
             <ImageIcon size={48} className="text-gray-300 mb-2" />
           )}
-          <input type="file" accept="image/*" onChange={handleFileChange} className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-6 file:rounded-full file:border-0 file:bg-gray-100 file:hover:bg-gray-200 cursor-pointer" required />
+          <input 
+            ref={fileInputRef}
+            type="file" 
+            accept="image/*" 
+            onChange={handleFileChange} 
+            className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-6 file:rounded-full file:border-0 file:bg-gray-100 file:hover:bg-gray-200 cursor-pointer" 
+            required 
+          />
         </div>
 
+        {/* ... restante do formulário (inputs de nome, preço, etc) mantém-se igual ... */}
         <div className="grid md:grid-cols-2 gap-6">
           <input type="text" placeholder="Nome do Produto" className="w-full p-4 bg-gray-50 rounded-xl border border-gray-100 outline-none focus:ring-2 focus:ring-mayitec-purple"
             value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required />
@@ -78,7 +103,7 @@ const AdminProductPage: React.FC = () => {
         <textarea placeholder="Descrição detalhada do produto..." className="w-full p-4 bg-gray-50 rounded-xl border border-gray-100 outline-none focus:ring-2 focus:ring-mayitec-purple h-32"
           value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} required />
         
-        <button type="submit" disabled={loading} className="w-full bg-mayitec-gradient text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2">
+        <button type="submit" disabled={loading} className="w-full bg-mayitec-purple text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2">
           {loading ? <Loader2 className="animate-spin" /> : <Upload size={20} />}
           {loading ? 'A processar...' : 'Publicar no Catálogo'}
         </button>

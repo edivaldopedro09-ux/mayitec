@@ -20,6 +20,7 @@ const HomePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   
   const itemsPerPage = 8;
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -60,6 +61,13 @@ const HomePage: React.FC = () => {
   const paginatedProducts = filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
+  // Função para resolver a URL da imagem de forma segura
+  const resolveImageUrl = (url: string) => {
+    if (!url) return '/sem-foto.png';
+    if (url.startsWith('http')) return url;
+    return `${API_URL}${url.startsWith('/') ? url : '/' + url}`;
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Banner de Destaque */}
@@ -88,7 +96,7 @@ const HomePage: React.FC = () => {
         {categories.map(cat => (
           <button 
             key={cat} 
-            onClick={() => setSelectedCategory(cat)} 
+            onClick={() => { setSelectedCategory(cat); setCurrentPage(1); }} 
             className={`px-5 py-2 rounded-full whitespace-nowrap transition ${selectedCategory === cat ? 'bg-mayitec-purple text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
           >
             {cat}
@@ -107,8 +115,7 @@ const HomePage: React.FC = () => {
                 name={product.name} 
                 price={product.price} 
                 category={product.category}
-                // Se a URL já começar com http (Cloudinary), usa-a. Caso contrário, anexa a URL base.
-                imageUrl={product.imageUrl.startsWith('http') ? product.imageUrl : `${import.meta.env.VITE_API_URL}${product.imageUrl}`}
+                imageUrl={resolveImageUrl(product.imageUrl)}
               />
               <button 
                 onClick={() => toggleFavorite(product._id)} 
@@ -122,17 +129,19 @@ const HomePage: React.FC = () => {
       )}
 
       {/* Paginação */}
-      <div className="flex justify-center mt-10 gap-2">
-        {Array.from({ length: totalPages }).map((_, i) => (
-          <button 
-            key={i} 
-            onClick={() => setCurrentPage(i + 1)} 
-            className={`px-4 py-2 rounded-lg ${currentPage === i + 1 ? 'bg-mayitec-purple text-white' : 'bg-gray-200'}`}
-          >
-            {i + 1}
-          </button>
-        ))}
-      </div>
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-10 gap-2">
+          {Array.from({ length: totalPages }).map((_, i) => (
+            <button 
+              key={i} 
+              onClick={() => setCurrentPage(i + 1)} 
+              className={`px-4 py-2 rounded-lg ${currentPage === i + 1 ? 'bg-mayitec-purple text-white' : 'bg-gray-200'}`}
+            >
+              {i + 1}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

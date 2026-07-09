@@ -7,11 +7,7 @@ import {
   ArrowRight, 
   Minus, 
   Plus, 
-  AlertCircle, 
   CheckCircle2, 
-  ExternalLink,
-  ClipboardList,
-  Package
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -25,9 +21,18 @@ const CartPage: React.FC = () => {
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   const total = cartItems.reduce((acc, item) => acc + item.price * item.qty, 0);
 
-  // Fallback seguro para imagens que falham
+  // Fallback seguro: se a imagem falhar, mostra um placeholder
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.src = 'https://placehold.co/150x150/e5e7eb/9ca3af?text=Sem+Foto';
+  };
+
+  // Função otimizada para capturar URLs do Cloudinary ou locais
+  const getImageUrl = (item: any) => {
+    const path = item.imageUrl || item.image || '';
+    // Se for Cloudinary ou outro link externo, retorna direto
+    if (path.startsWith('http')) return path;
+    // Se for caminho local, concatena com a API_URL
+    return `${API_URL}${path.startsWith('/') ? path : '/' + path}`;
   };
 
   const handleWhatsAppCheckout = async () => {
@@ -87,12 +92,6 @@ const CartPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const getImageUrl = (item: any) => {
-    const path = item.imageUrl || item.image || '';
-    if (path.startsWith('http')) return path;
-    return `${API_URL}${path}`;
   };
 
   // --- ECRÃ DE SUCESSO ---

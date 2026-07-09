@@ -22,7 +22,7 @@ const ProductDetailsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isAdded, setIsAdded] = useState<boolean>(false);
 
-  // Busca a URL do backend nas variáveis de ambiente
+  // A base URL do seu backend para casos de fallback
   const apiBaseUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, '') || 'https://api.mayitec.com';
 
   useEffect(() => {
@@ -35,9 +35,6 @@ const ProductDetailsPage: React.FC = () => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        // CORREÇÃO: Removido o '/api' extra. 
-        // Como o API.ts já tem a baseURL configurada com /api, 
-        // basta chamar o endpoint final '/products/...'
         const { data } = await API.get(`/products/${id}`);
         setProduct(data);
       } catch (err: any) {
@@ -59,20 +56,15 @@ const ProductDetailsPage: React.FC = () => {
     }
   };
 
+  // Função simplificada para lidar com URLs do Cloudinary
   const getImageUrl = (url: string) => {
     if (!url) return "/sem-foto.png";
     
-    // Se a string contiver localhost, removemos o domínio e usamos a base correta
-    if (url.includes('localhost:5000')) {
-      const path = url.split('localhost:5000')[1];
-      return `${apiBaseUrl}${path.startsWith('/') ? path : '/' + path}`;
-    }
-    
-    // Se for um link externo (ex: Cloudinary, S3), retornamos tal qual
+    // Se a URL já for externa (Cloudinary), retorna-a diretamente
     if (url.startsWith('http')) return url;
     
-    // Caminho relativo
-    return `${apiBaseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+    // Caso contrário, trata como caminho relativo (fallback para imagens antigas)
+    return `${apiBaseUrl}${url.startsWith('/') ? url : '/' + url}`;
   };
 
   if (loading) {

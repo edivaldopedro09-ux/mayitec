@@ -12,21 +12,9 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ id, name, price, imageUrl, category }) => {
   
-  // Função que resolve a URL base de forma dinâmica
-  const getImageUrl = (url: string) => {
-    // 1. Caso não exista imagem, usa um placeholder estável
-    if (!url) return "https://placehold.co/300x300?text=Sem+Imagem";
-    
-    // 2. Se já for uma URL completa (ex: Cloudinary), devolve como está
-    if (url.startsWith('http')) return url;
-    
-    // 3. Caso contrário, concatena com a URL do backend (dinâmica)
-    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-    const baseUrl = apiBase.replace(/\/api$/, '');
-    const formattedPath = url.startsWith('/') ? url : `/${url}`;
-    
-    return `${baseUrl}${formattedPath}`;
-  };
+  // Agora que a URL chega resolvida da HomePage/Backend,
+  // esta função serve apenas como uma camada de segurança extra.
+  const displayImageUrl = imageUrl || "https://placehold.co/300x300?text=Sem+Imagem";
 
   return (
     <div className="group bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-gray-200/60 transition-all duration-300 flex flex-col overflow-hidden h-full">
@@ -39,11 +27,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ id, name, price, imageUrl, ca
           </span>
         )}
         <img 
-          src={getImageUrl(imageUrl)} 
+          src={displayImageUrl}
           alt={name} 
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           onError={(e) => {
-            // Caso a imagem do servidor falhe (ex: 404), usa o placeholder de segurança
+            e.currentTarget.onerror = null; 
             e.currentTarget.src = "https://placehold.co/300x300?text=Erro+Imagem";
           }}
         />

@@ -18,32 +18,22 @@ import {
 type TabType = 'orders' | 'products' | 'users';
 
 const AdminDashboard: React.FC = () => {
-  // Estados Globais de Dados
   const [orders, setOrders] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   
-  // Estados de Controlo de UI
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('orders');
   const [statusFilter, setStatusFilter] = useState('Todos');
 
-  // Função auxiliar para resolver a URL das imagens dinamicamente
+  // Função simplificada para resolver a URL das imagens
   const getImageUrl = (path: string) => {
-    if (!path) return ''; 
-    // Se o caminho já for uma URL completa, retorna como está
-    if (path.startsWith('http')) return path; 
-    
-    // Usa a variável de ambiente, ou fallback para localhost
+    if (!path) return '';
+    // Se a imagem já vier do Cloudinary (http...), mantém o link.
+    // Caso contrário, assume-se um caminho relativo do servidor.
+    if (path.startsWith('http')) return path;
     const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-    
-    // Remove o '/api' da URL caso exista (o upload geralmente não fica dentro da pasta /api)
-    const baseUrl = apiBase.replace(/\/api$/, '');
-    
-    // Garante que o caminho da imagem começa com /
-    const formattedPath = path.startsWith('/') ? path : `/${path}`;
-    
-    return `${baseUrl}${formattedPath}`;
+    return `${apiBase.replace(/\/$/, '')}${path.startsWith('/') ? path : '/' + path}`;
   };
 
   useEffect(() => {
@@ -173,24 +163,15 @@ const AdminDashboard: React.FC = () => {
       </div>
 
       <div className="flex border-b border-gray-100 gap-6 mb-8 overflow-x-auto pb-1">
-        <button 
-          onClick={() => setActiveTab('orders')}
-          className={`pb-4 text-base font-black border-b-2 transition-all px-2 ${activeTab === 'orders' ? 'border-mayitec-purple text-mayitec-purple' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
-        >
-          Gestão de Pedidos ({orders.length})
-        </button>
-        <button 
-          onClick={() => setActiveTab('products')}
-          className={`pb-4 text-base font-black border-b-2 transition-all px-2 ${activeTab === 'products' ? 'border-mayitec-purple text-mayitec-purple' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
-        >
-          Inventário de Produtos ({products.length})
-        </button>
-        <button 
-          onClick={() => setActiveTab('users')}
-          className={`pb-4 text-base font-black border-b-2 transition-all px-2 ${activeTab === 'users' ? 'border-mayitec-purple text-mayitec-purple' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
-        >
-          Clientes Registados ({users.length})
-        </button>
+        {(['orders', 'products', 'users'] as TabType[]).map((tab) => (
+          <button 
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`pb-4 text-base font-black border-b-2 transition-all px-2 capitalize ${activeTab === tab ? 'border-mayitec-purple text-mayitec-purple' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+          >
+            {tab === 'orders' ? `Gestão de Pedidos (${orders.length})` : tab === 'products' ? `Inventário (${products.length})` : `Clientes (${users.length})`}
+          </button>
+        ))}
       </div>
 
       {activeTab === 'orders' && (
@@ -261,7 +242,7 @@ const AdminDashboard: React.FC = () => {
                   <th className="p-5">Produto</th>
                   <th className="p-5">Categoria</th>
                   <th className="p-5">Preço Base</th>
-                  <th className="p-5 text-center">Controlo de Stock</th>
+                  <th className="p-5 text-center">Stock</th>
                   <th className="p-5 text-center">Ações</th>
                 </tr>
               </thead>
@@ -269,26 +250,22 @@ const AdminDashboard: React.FC = () => {
                 {products.map((product) => (
                   <tr key={product._id} className="hover:bg-gray-50/80 transition">
                     <td className="p-5 flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl overflow-hidden bg-gray-50 border flex-shrink-0">
-                        <img 
-                          src={getImageUrl(product.imageUrl)} 
-                          alt={product.name} 
-                          className="w-full h-full object-cover" 
-                        />
+                      <div className="w-10 h-10 rounded-xl overflow-hidden bg-gray-50 border">
+                        <img src={getImageUrl(product.imageUrl)} alt={product.name} className="w-full h-full object-cover" />
                       </div>
-                      <span className="font-bold text-gray-800 truncate max-w-xs">{product.name}</span>
+                      <span className="font-bold text-gray-800">{product.name}</span>
                     </td>
-                    <td className="p-5 text-gray-500 font-medium">{product.category || 'Sem Categoria'}</td>
+                    <td className="p-5 text-gray-500">{product.category || 'Geral'}</td>
                     <td className="p-5 font-black text-gray-900">{product.price?.toLocaleString()} AOA</td>
                     <td className="p-5">
                       <div className="flex items-center justify-center gap-2">
-                        <button onClick={() => handleUpdateStock(product._id, product.stock || 0, -1)} className="p-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition"><Minus size={14} /></button>
-                        <span className={`font-black text-base px-3 min-w-8 text-center ${(product.stock || 0) === 0 ? 'text-red-500 font-extrabold' : 'text-gray-800'}`}>{product.stock || 0}</span>
-                        <button onClick={() => handleUpdateStock(product._id, product.stock || 0, 1)} className="p-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition"><Plus size={14} /></button>
+                        <button onClick={() => handleUpdateStock(product._id, product.stock, -1)} className="p-1 bg-gray-100 rounded-lg"><Minus size={14} /></button>
+                        <span className="font-black text-base w-8 text-center">{product.stock || 0}</span>
+                        <button onClick={() => handleUpdateStock(product._id, product.stock, 1)} className="p-1 bg-gray-100 rounded-lg"><Plus size={14} /></button>
                       </div>
                     </td>
                     <td className="p-5 text-center">
-                      <button onClick={() => handleDeleteProduct(product._id, product.name)} className="text-gray-400 hover:text-red-500 transition p-1" title="Eliminar Produto"><Trash2 size={18} /></button>
+                      <button onClick={() => handleDeleteProduct(product._id, product.name)} className="text-gray-400 hover:text-red-500"><Trash2 size={18} /></button>
                     </td>
                   </tr>
                 ))}
@@ -307,35 +284,24 @@ const AdminDashboard: React.FC = () => {
             <table className="w-full text-left whitespace-nowrap">
               <thead className="bg-gray-50 text-gray-400 text-[11px] font-black tracking-wider border-b uppercase">
                 <tr>
-                  <th className="p-5">Nome Completo</th>
-                  <th className="p-5">E-mail de Acesso</th>
+                  <th className="p-5">Nome</th>
+                  <th className="p-5">E-mail</th>
                   <th className="p-5">Estatuto</th>
                   <th className="p-5 text-center">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm">
-                {users.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="p-10 text-center text-gray-400 font-medium">Nenhum utilizador sincronizado ou verificado na base de dados.</td>
-                  </tr>
-                ) : users.map((user) => (
+                {users.map((user) => (
                   <tr key={user._id} className="hover:bg-gray-50/80 transition">
-                    <td className="p-5 font-bold text-gray-800 flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-purple-50 text-mayitec-purple flex items-center justify-center font-black text-xs uppercase">{user.name?.substring(0, 2)}</div>
-                      <span>{user.name}</span>
-                    </td>
-                    <td className="p-5 text-gray-500 font-mono text-xs">{user.email}</td>
+                    <td className="p-5 font-bold">{user.name}</td>
+                    <td className="p-5 text-gray-500">{user.email}</td>
                     <td className="p-5">
-                      {user.isAdmin ? (
-                        <span className="bg-purple-50 text-mayitec-purple border border-purple-100 text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase tracking-wider">Administrador</span>
-                      ) : (
-                        <span className="bg-gray-50 text-gray-600 border border-gray-200/60 text-[10px] font-bold px-2.5 py-0.5 rounded-md uppercase tracking-wider">Cliente</span>
-                      )}
+                      <span className={`px-2.5 py-0.5 rounded-md font-black text-[10px] uppercase ${user.isAdmin ? 'bg-purple-50 text-mayitec-purple' : 'bg-gray-50 text-gray-600'}`}>
+                        {user.isAdmin ? 'Admin' : 'Cliente'}
+                      </span>
                     </td>
                     <td className="p-5 text-center">
-                      {!user.isAdmin && (
-                        <button onClick={() => handleDeleteUser(user._id, user.name)} className="text-gray-400 hover:text-red-500 transition p-1" title="Eliminar Utilizador"><Trash2 size={18} /></button>
-                      )}
+                      {!user.isAdmin && <button onClick={() => handleDeleteUser(user._id, user.name)} className="text-gray-400 hover:text-red-500"><Trash2 size={18} /></button>}
                     </td>
                   </tr>
                 ))}
@@ -344,7 +310,6 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };
