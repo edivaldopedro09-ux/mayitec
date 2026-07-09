@@ -25,8 +25,6 @@ const LoadingScreen: React.FC = () => (
         A preparar a sua experiência...
         
       </p>
-      <p className="mt-2 text-gray-400 text-xs">Se demorar mais de 5 segundos, verifique a sua ligação à internet.</p>
-      <p className="mt-1 text-gray-400 text-xs">Se o problema persistir, contacte-nos via WhatsApp: +244 924 002 282</p>
       <p className="mt-1 text-gray-400 text-xs">vesrsão 1.0.0</p>
     </div>
   </div>
